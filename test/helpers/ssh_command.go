@@ -232,7 +232,13 @@ func (client *SSHClient) RunCommandContext(ctx context.Context, cmd *SSHCommand)
 			}
 		}
 	}()
-	return runCommand(session, cmd)
+	err = runCommand(session, cmd)
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		return err
+	}
 }
 
 func (client *SSHClient) newSession() (*ssh.Session, error) {
